@@ -16,6 +16,33 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      ansible-core-version:
+        description: Version of ansible-core to use. Empty for latest.
+        required: false
+        type: string
+      ansible-lint-version:
+        description: Version of ansible-lint to use. Empty for latest.
+        required: false
+        type: string
+      galaxy-importer-version:
+        description: Version of galaxy-importer to use. Empty for latest.
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      ansible-core-version:
+        description: Version of ansible-core to use. Empty for latest.
+        required: false
+        type: string
+      ansible-lint-version:
+        description: Version of ansible-lint to use. Empty for latest.
+        required: false
+        type: string
+      galaxy-importer-version:
+        description: Version of galaxy-importer to use. Empty for latest.
+        required: false
+        type: string
   # Below is an example cron scheduler,
   # tweak it as per your requirement
   schedule:
@@ -43,8 +70,21 @@ jobs:
 
       - name: Ensure ansible-core and galaxy-importer is installed
         shell: bash
+        env:
+          ANSIBLE_CORE: "${{ inputs.ansible-core-version || '' }}"
+          GALAXY_IMPORTER: "${{ inputs.galaxy-importer-version || '' }}"
         run: |
-          python -m pip install ansible-core galaxy-importer
+          if [ -n "$ANSIBLE_CORE" ]; then
+            python -m pip install "ansible-core==$ANSIBLE_CORE"
+          else
+            python -m pip install ansible-core
+          fi
+          
+          if [ -n "$GALAXY_IMPORTER" ]; then
+            python -m pip install "galaxy-importer==$GALAXY_IMPORTER"
+          else
+            python -m pip install galaxy-importer
+          fi
 
       - name: Update galaxy-importer.cfg
         shell: bash
@@ -80,7 +120,16 @@ jobs:
           python-version: "3.12"
 
       - name: Install ansible-lint
-        run: pip install ansible-lint
+        shell: bash
+        env:
+          ANSIBLE_LINT: "${{ inputs.ansible-lint-version || '' }}"
+        run: |
+
+          if [ -n "$ANSIBLE_LINT" ]; then
+            pip install "ansible-lint==$ANSIBLE_LINT"
+          else
+            pip install ansible-lint
+          fi
 
       - name: Run ansible-lint
         run: ansible-lint --profile=production -x sanity

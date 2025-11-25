@@ -1,0 +1,16 @@
+name: Test certification inputs
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  call:
+    uses: ./.github/workflows/certification.yml
+    with:
+      ansible-core-version: '2.16.0'
+      ansible-lint-version: '24.12.2'
+      galaxy-importer-version: '0.4.31'
