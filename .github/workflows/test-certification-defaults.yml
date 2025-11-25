@@ -1,4 +1,4 @@
-name: Test certification versioned
+name: Test certification defaults
 
 on:
   pull_request:
@@ -9,4 +9,4 @@ on:
 
 jobs:
   call:
-    uses: ./.github/workflows/certification-versioned.yml
+    uses: ./.github/workflows/certification.yml
