@@ -3,6 +3,9 @@
 # in this repository for testing purposes.
 name: (main) Run collection certification checks
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches: [main]
