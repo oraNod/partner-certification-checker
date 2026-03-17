@@ -2,6 +2,10 @@
 # This workflow runs the reusable workflow
 # in this repository for testing purposes.
 name: Test certification-reusable workflow
+
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches: [main]

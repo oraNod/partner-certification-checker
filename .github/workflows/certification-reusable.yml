@@ -38,8 +38,10 @@ jobs:
     steps:
       - name: Derive stable-X.Y from ansible-core-version
         id: compute
+        env:
+          ANSIBLE_CORE_VERSION: ${{ inputs.ansible-core-version }}
         run: |
-          version="${{ inputs.ansible-core-version }}"
+          version="${ANSIBLE_CORE_VERSION}"
           major_minor=$(echo "${version}" | cut -d. -f1,2)
           echo "stable-ansible=stable-${major_minor}" >> "${GITHUB_OUTPUT}"
 
@@ -55,17 +57,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.12"
 
       - name: Install ansible-core
-        run: pip install ansible-core==${{ env.CORE_VER }}
+        env:
+          CORE_VER: ${{ inputs.ansible-core-version }}
+        run: pip install ansible-core==${CORE_VER}
 
       - name: Install galaxy-importer
         shell: bash
@@ -92,22 +96,23 @@ jobs:
     name: "Lint production"
     runs-on: ubuntu-latest
     env:
-      CORE_VER: ${{ inputs.ansible-core-version }}
       LINT_VER: "24.12.2"
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.12"
 
       - name: Install ansible-core
-        run: pip install ansible-core==${{ env.CORE_VER }}
+        env:
+          CORE_VER: ${{ inputs.ansible-core-version }}
+        run: pip install ansible-core==${CORE_VER}
 
       - name: Install ansible-lint
         run: pip install ansible-lint==${{ env.LINT_VER }}
