@@ -69,7 +69,7 @@ jobs:
       - name: Install ansible-core
         env:
           CORE_VER: ${{ inputs.ansible-core-version }}
-        run: pip install ansible-core==${CORE_VER}
+        run: pip install ansible-core=="${CORE_VER}"
 
       - name: Install galaxy-importer
         shell: bash
@@ -112,7 +112,7 @@ jobs:
       - name: Install ansible-core
         env:
           CORE_VER: ${{ inputs.ansible-core-version }}
-        run: pip install ansible-core==${CORE_VER}
+        run: pip install ansible-core=="${CORE_VER}"
 
       - name: Install ansible-lint
         run: pip install ansible-lint==${{ env.LINT_VER }}
