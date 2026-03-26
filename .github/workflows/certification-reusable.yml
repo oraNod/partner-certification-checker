@@ -26,6 +26,14 @@ on:
         required: false
         default: '["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]'
         type: string
+      collection-root:
+        description: >-
+          Relative path to the collection root in the repository.
+          This input should only be used when the collection is
+          in a non standard location (not at the root of the
+          repository).
+        default: "."
+        type: string
 
 jobs:
   # Derive stable-X.Y from the ansible-core-version input for use in the
@@ -54,6 +62,7 @@ jobs:
       RUN_ANSIBLE_LINT: "False"
       CORE_VER: ${{ inputs.ansible-core-version }}
       GALAXY_IMPORTER_VER: "0.4.31"
+      COLLECTION_ROOT: ${{ inputs.collection-root }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -88,7 +97,7 @@ jobs:
 
       - name: Build the collection tarball and run galaxy importer on it
         shell: bash
-        run: python -m galaxy_importer.main --git-clone-path . --output-path /tmp
+        run: python -m galaxy_importer.main --git-clone-path "${COLLECTION_ROOT}" --output-path /tmp
 
   # Run ansible-lint with profile "production"
   # and skipping sanity checks as they run as a separate job
@@ -97,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LINT_VER: "24.12.2"
-
+      COLLECTION_ROOT: ${{ inputs.collection-root }}
     steps:
       - name: Check out code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -118,7 +127,17 @@ jobs:
         run: pip install ansible-lint==${{ env.LINT_VER }}
 
       - name: Run ansible-lint
-        run: ansible-lint --profile=production -x sanity
+        # We must change directory first prior to running ansible-lint
+        # if a collection root other than the default has been provided.
+        # If we do not, ansible-lint does not install the collection itself.
+        # Using --project-dir or passing the relative path to the collection
+        # as the positional argument do not work.
+        run: |
+          if [ "${COLLECTION_ROOT}" != "." ]; then
+            echo "Changing directory based on collection root ${COLLECTION_ROOT}"
+            cd "${COLLECTION_ROOT}"
+          fi
+          ansible-lint --profile=production --skip-list sanity
 
   # Run sanity checks against the collection
   sanity:
@@ -141,6 +160,7 @@ jobs:
           ansible-core-version: ${{ needs.compute-versions.outputs.stable-ansible }}
           testing-type: sanity
           target-python-version: ${{ matrix.python }}
+          collection-root: ${{ inputs.collection-root }}
           # Uncomment to configure a codecov token.
           # Check here whether a token is required: https://docs.codecov.com/docs/codecov-tokens
           # Collections in the github.com/ansible-collections/ namespace usually do not need a token.
