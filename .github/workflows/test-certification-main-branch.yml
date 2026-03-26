@@ -36,3 +36,9 @@ jobs:
     with:
       ansible-core-version: '2.18.0'
       python-versions: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
+
+  # Test when the collection root is not at the root of the repository
+  call-collection-root:
+    uses: ./.github/workflows/certification-reusable.yml
+    with:
+      collection-root: "tests/fixtures/collection"
